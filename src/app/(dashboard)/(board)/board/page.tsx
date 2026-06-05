@@ -1,14 +1,14 @@
-'use client';
-import { apiHandler } from '@/api/apiHandler';
-import { DEFAULT_PAGINATION } from '@/constants';
-import { ROUTES } from '@/constants/routes';
-import { Filter } from '@/types';
-import { generatePaginationParams, showToast } from '@/utils';
-import { Button, Card, Input, Modal, Popconfirm, Tag } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+"use client";
+import { apiHandler } from "@/api/apiHandler";
+import { DEFAULT_PAGINATION } from "@/constants";
+import { ROUTES } from "@/constants/routes";
+import { Filter } from "@/types";
+import { generatePaginationParams, showToast } from "@/utils";
+import { Button, Card, Input, Modal, Popconfirm, Tag } from "antd";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
-const initialPayload = { title: '', description: '' }
+const initialPayload = { title: "", description: "" };
 
 export default function BoardListPage() {
   const router = useRouter();
@@ -19,18 +19,17 @@ export default function BoardListPage() {
   const [creating, setCreating] = useState(false);
   const [filters, setFilters] = useState<Filter>({
     ...DEFAULT_PAGINATION,
-    sort: 'createdAt',
+    sort: "createdAt",
     sortType: -1,
-    search: ''
+    search: "",
   });
 
   const handleFilter = (key: string, value: string) => {
     setFilters((prev) => ({
       ...prev,
-      [key]: [value]
+      [key]: [value],
     }));
-  }
-
+  };
 
   const fetchBoard = useCallback(async () => {
     try {
@@ -41,7 +40,7 @@ export default function BoardListPage() {
           limit: filters.limit,
           sortType: filters.sortType,
           sort: filters.sort,
-        })
+        }),
       );
       if ([200, 201].includes(status)) {
         setBoardData(res?.data?.docs || []);
@@ -52,7 +51,7 @@ export default function BoardListPage() {
         }));
       }
     } catch (error: any) {
-      showToast('error', error?.message);
+      showToast("error", error?.message);
     } finally {
       setLoading(false);
     }
@@ -64,20 +63,20 @@ export default function BoardListPage() {
 
   const handleCreate = async () => {
     if (!payload.title.trim()) {
-      showToast('error', 'Board title is required');
+      showToast("error", "Board title is required");
       return;
     }
     setCreating(true);
     try {
       const { status } = await apiHandler.boards.create(payload);
       if ([200, 201].includes(status)) {
-        showToast('success', 'Board created successfully');
+        showToast("success", "Board created successfully");
         setCreateModalOpen(false);
-        setPayload({ title: '', description: '' });
+        setPayload({ title: "", description: "" });
         fetchBoard();
       }
     } catch (error: any) {
-      showToast('error', error?.message);
+      showToast("error", error?.message);
     } finally {
       setCreating(false);
     }
@@ -87,13 +86,13 @@ export default function BoardListPage() {
     async (id: string) => {
       try {
         await apiHandler.boards.delete(id);
-        showToast('success', 'Board deleted');
+        showToast("success", "Board deleted");
         fetchBoard();
       } catch (error: any) {
-        showToast('error', error?.message);
+        showToast("error", error?.message);
       }
     },
-    [fetchBoard]
+    [fetchBoard],
   );
 
   return (
@@ -103,12 +102,7 @@ export default function BoardListPage() {
           <h1 className="text-2xl font-bold text-slate-800">My Boards</h1>
           <p className="text-sm text-slate-500">Manage your collaborative boards</p>
         </div>
-        <Button
-          type="primary"
-          size="large"
-          onClick={() => setCreateModalOpen(true)}
-          className="bg-indigo-600"
-        >
+        <Button type="primary" size="large" onClick={() => setCreateModalOpen(true)} className="bg-indigo-600">
           + New Board
         </Button>
       </div>
@@ -117,7 +111,7 @@ export default function BoardListPage() {
         <Input.Search
           placeholder="Search boards..."
           value={filters.search}
-          onChange={(e) => handleFilter('search', e.target.value)}
+          onChange={(e) => handleFilter("search", e.target.value)}
           className="max-w-sm"
           allowClear
         />
@@ -136,7 +130,7 @@ export default function BoardListPage() {
             <Card
               key={board._id}
               hoverable
-              className="cursor-pointer border border-slate-200 shadow-sm"
+              className="cursor-pointer border border-slate-200 shadow-sm [&_li]:m-0!"
               actions={[
                 <Button
                   key="edit"
@@ -146,6 +140,7 @@ export default function BoardListPage() {
                     e.stopPropagation();
                     router.push(`${ROUTES.board.action}?id=${board._id}`);
                   }}
+                  className="w-full! h-full! py-2!"
                 >
                   Edit
                 </Button>,
@@ -158,7 +153,13 @@ export default function BoardListPage() {
                   }}
                   onCancel={(e) => e?.stopPropagation()}
                 >
-                  <Button type="link" danger size="small" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    type="link"
+                    danger
+                    size="small"
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full! h-full! py-2!"
+                  >
                     Delete
                   </Button>
                 </Popconfirm>,
@@ -168,9 +169,7 @@ export default function BoardListPage() {
                 title={<span className="font-semibold text-slate-800">{board.title}</span>}
                 description={
                   <div>
-                    <p className="text-sm text-slate-500 line-clamp-2 mb-2">
-                      {board.description || 'No description'}
-                    </p>
+                    <p className="text-sm text-slate-500 line-clamp-2 mb-2">{board.description || "No description"}</p>
                     <Tag color="blue">{board.members?.length || 0} members</Tag>
                   </div>
                 }
@@ -186,7 +185,7 @@ export default function BoardListPage() {
         onOk={handleCreate}
         onCancel={() => {
           setCreateModalOpen(false);
-          setPayload({ title: '', description: '' });
+          setPayload({ title: "", description: "" });
         }}
         okText="Create"
         confirmLoading={creating}
