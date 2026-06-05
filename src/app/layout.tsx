@@ -1,11 +1,11 @@
-'use client';
-import { ReduxProvider } from '@/redux';
-import { App as AntdApp, ConfigProvider } from 'antd';
-import { Fragment, PropsWithChildren, useEffect } from 'react';
-import './globals.css';
-import RootLayout from './RootLayout';
+"use client";
+import { ReduxProvider } from "@/redux";
+import { App as AntdApp, ConfigProvider } from "antd";
+import { Fragment, PropsWithChildren, useEffect } from "react";
+import "./globals.css";
+import RootLayout from "./RootLayout";
 
-import { setMessageInstance } from '@/utils/helpers';
+import { setMessageInstance } from "@/utils/helpers";
 
 const AntdMessageExtractor = () => {
   const { message } = AntdApp.useApp();
@@ -17,14 +17,14 @@ const AntdMessageExtractor = () => {
 
 const ChildLayout = ({ children }: PropsWithChildren) => {
   useEffect(() => {
-    const el = document.querySelector('.container');
+    const el = document.querySelector(".container");
     let timer: NodeJS.Timeout;
 
-    el?.addEventListener('scroll', () => {
-      el?.classList.add('show-scrollbar');
+    el?.addEventListener("scroll", () => {
+      el?.classList.add("show-scrollbar");
       clearTimeout(timer);
       timer = setTimeout(() => {
-        el?.classList.remove('show-scrollbar');
+        el?.classList.remove("show-scrollbar");
       }, 800);
     });
   }, []);
@@ -38,9 +38,9 @@ export default function Layout({ children }: PropsWithChildren) {
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: '#4f46e5',
+            colorPrimary: "#4f46e5",
             borderRadius: 8,
-            fontFamily: 'var(--font-poppins), sans-serif',
+            fontFamily: "var(--font-poppins), sans-serif",
           },
         }}
       >

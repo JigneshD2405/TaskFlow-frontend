@@ -1,14 +1,14 @@
-import _ from 'lodash';
-import { NextRequest, NextResponse } from 'next/server';
-import { ROUTES } from '@/constants/routes';
+import { ROUTES } from "@/constants/routes";
+import _ from "lodash";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  const refreshToken = req.cookies.get('refreshToken');
-  const isAuthenticated = !_.isEmpty(refreshToken?.value || '');
+  const refreshToken = req.cookies.get("refreshToken");
+  const isAuthenticated = !_.isEmpty(refreshToken?.value || "");
 
-  if (path === '/') {
+  if (path === "/") {
     if (isAuthenticated) {
       return NextResponse.redirect(new URL(ROUTES.board.list, req.url));
     }
@@ -27,5 +27,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

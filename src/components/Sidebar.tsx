@@ -1,15 +1,13 @@
-'use client';
-import { actions, selectors } from '@/redux';
-import { ROUTES } from '@/constants/routes';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
-import { apiHandler } from '@/api/apiHandler';
-import { showToast } from '@/utils';
+"use client";
+import { apiHandler } from "@/api/apiHandler";
+import { ROUTES } from "@/constants/routes";
+import { actions, selectors } from "@/redux";
+import { showToast } from "@/utils";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 
-const navItems = [
-  { label: 'Boards', href: ROUTES.board.list, icon: '📋' },
-];
+const navItems = [{ label: "Boards", href: ROUTES.board.list, icon: "📋" }];
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -20,10 +18,10 @@ export const Sidebar = () => {
   const handleLogout = async () => {
     try {
       await apiHandler.auth.signOut();
-    } catch { }
+    } catch {}
     dispatch(actions.logout());
     router.push(ROUTES.auth.signIn);
-    showToast('success', 'Logged out successfully');
+    showToast("success", "Logged out successfully");
   };
 
   return (
@@ -38,10 +36,11 @@ export const Sidebar = () => {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${pathname.startsWith(item.href)
-              ? 'bg-indigo-600 text-white'
-              : 'text-slate-400 hover:bg-slate-700 hover:text-white'
-              }`}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              pathname.startsWith(item.href)
+                ? "bg-indigo-600 text-white"
+                : "text-slate-400 hover:bg-slate-700 hover:text-white"
+            }`}
           >
             <span>{item.icon}</span>
             <span>{item.label}</span>

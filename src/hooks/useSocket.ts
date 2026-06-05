@@ -1,0 +1,72 @@
+'use client';
+import { actions, selectors, store } from '@/redux';
+import { Card, Column } from '@/types';
+import { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { io, Socket } from 'socket.io-client';
+
+export const useSocket = (boardId: string | null) => {
+  const dispatch = useDispatch();
+  const user = useSelector(selectors.selectUser);
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    if (!boardId || !user?.accessToken) return;
+
+    const socket = io(process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8080', {
+      auth: { token: `Bearer ${user.accessToken}` },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      socket.emit('join-board', boardId);
+    });
+
+    socket.on('column:created', ({ column }: { column: Column }) => {
+      dispatch(actions.addColumn(column));
+    });
+
+    socket.on('column:updated', ({ column }: { column: Column }) => {
+      dispatch(actions.updateColumn(column));
+    });
+
+    socket.on('column:deleted', ({ columnId }: { columnId: string }) => {
+      dispatch(actions.removeColumn(columnId));
+    });
+
+    socket.on('card:created', ({ card }: { card: Card }) => {
+      dispatch(actions.addCard(card));
+    });
+
+    socket.on('card:updated', ({ card }: { card: Card }) => {
+      dispatch(actions.updateCard(card));
+    });
+
+    socket.on('card:deleted', ({ cardId, columnId }: { cardId: string; columnId: string }) => {
+      dispatch(actions.removeCard({ cardId, columnId }));
+    });
+
+    socket.on('card:moved', ({ card, fromColumnId, toColumnId }: any) => {
+      dispatch(actions.moveCard({ card, fromColumnId, toColumnId }));
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err.message);
+    });
+
+    return () => {
+      socket.emit('leave-board', boardId);
+      socket.disconnect();
+    };
+  }, [boardId, user?.accessToken, dispatch]);
+
+  return socketRef;
+};

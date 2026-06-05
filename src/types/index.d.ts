@@ -1,4 +1,3 @@
-
 export interface User {
   _id: string;
   name: string;
@@ -15,6 +14,28 @@ export interface Board {
   updatedAt: string;
 }
 
+export interface Column {
+  _id: string;
+  title: string;
+  boardId: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Card {
+  _id: string;
+  title: string;
+  description?: string;
+  columnId: string;
+  boardId: string;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface Filter {
   page: number;

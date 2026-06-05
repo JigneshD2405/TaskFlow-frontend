@@ -131,6 +131,7 @@ export default function BoardListPage() {
               key={board._id}
               hoverable
               className="cursor-pointer border border-slate-200 shadow-sm [&_li]:m-0!"
+              onClick={() => router.push(`${ROUTES.board.kanban}?id=${board._id}`)}
               actions={[
                 <Button
                   key="edit"

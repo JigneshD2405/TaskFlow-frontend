@@ -1,6 +1,6 @@
-import { ROUTES } from '@/constants/routes';
-import { actions, store } from '@/redux';
-import axios, { AxiosResponse } from 'axios';
+import { ROUTES } from "@/constants/routes";
+import { actions, store } from "@/redux";
+import axios, { AxiosResponse } from "axios";
 
 const baseURL = process.env.NEXT_PUBLIC_BACKEND_API;
 
@@ -18,9 +18,9 @@ apiClient.interceptors.request.use(
   function (error) {
     return Promise.reject({
       error,
-      message: error?.response?.data?.message || 'Something Went Wrong !!',
+      message: error?.response?.data?.message || "Something Went Wrong !!",
     });
-  }
+  },
 );
 
 apiClient.interceptors.response.use(
@@ -33,11 +33,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const { data } = await axios.post(
-          `${baseURL}/refresh-token`,
-          {},
-          { withCredentials: true }
-        );
+        const { data } = await axios.post(`${baseURL}/refresh-token`, {}, { withCredentials: true });
         const newToken = data?.data?.accessToken;
         if (newToken) {
           store.dispatch(actions.setAccessToken(newToken));
@@ -46,7 +42,7 @@ apiClient.interceptors.response.use(
         }
       } catch {
         store.dispatch(actions.logout());
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           window.location.href = ROUTES.auth.signIn;
         }
       }
@@ -54,7 +50,7 @@ apiClient.interceptors.response.use(
 
     return Promise.reject({
       error,
-      message: error?.response?.data?.message || 'Something Went Wrong !!',
+      message: error?.response?.data?.message || "Something Went Wrong !!",
     });
-  }
+  },
 );

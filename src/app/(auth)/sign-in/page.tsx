@@ -4,9 +4,11 @@ import { ROUTES } from "@/constants/routes";
 import { actions } from "@/redux";
 import { showToast } from "@/utils";
 import { Button, Input } from "antd";
+import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, SubmitEvent, useState } from "react";
 import { useDispatch } from "react-redux";
+
 interface Payload {
   email: string;
   password: string;
@@ -59,6 +61,7 @@ export default function SignIn() {
 
     setLoading(true);
     try {
+      Cookies.remove("refreshToken");
       const { data, status } = await apiHandler.auth.signIn(payload);
 
       if ([200, 201].includes(status)) {

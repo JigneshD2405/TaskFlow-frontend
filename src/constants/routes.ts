@@ -1,10 +1,11 @@
 const ROUTES = {
   auth: {
-    signIn: '/sign-in',
+    signIn: "/sign-in",
   },
   board: {
-    list: '/board',
-    action: '/board/action',
+    list: "/board",
+    action: "/board/action",
+    kanban: "/kanban",
   },
 };
 
