@@ -96,6 +96,7 @@ export default function SignIn() {
           <Button
             type="primary"
             htmlType="submit"
+            loading={loading}
             block
             size="large"
             className="mt-2 bg-indigo-600 hover:bg-indigo-700"

@@ -5,6 +5,8 @@ const Query = {
   refreshToken: '/refresh-token',
   signOut: '/sign-out',
   auth: '/auth',
+
+  boards: '/boards',
 };
 
 export default Query;

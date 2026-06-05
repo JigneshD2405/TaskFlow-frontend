@@ -15,4 +15,16 @@ export const apiHandler = {
     auth: (options?: AxiosRequestConfig) =>
       apiClient.get(Query.auth, options),
   },
+  boards: {
+    list: (filterString: string = '', options?: AxiosRequestConfig) =>
+      apiClient.get(`${Query.boards}?${filterString}`, options),
+    get: (id: string, options?: AxiosRequestConfig) =>
+      apiClient.get(`${Query.boards}/${id}`, options),
+    create: (payload: any, options?: AxiosRequestConfig) =>
+      apiClient.post(Query.boards, payload, options),
+    update: (id: string, payload: any, options?: AxiosRequestConfig) =>
+      apiClient.patch(`${Query.boards}/${id}`, payload, options),
+    delete: (id: string, options?: AxiosRequestConfig) =>
+      apiClient.delete(`${Query.boards}/${id}`, options),
+  },
 };
