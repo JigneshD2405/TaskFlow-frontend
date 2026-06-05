@@ -1,8 +1,19 @@
 'use client';
-import { App as AntdApp, } from 'antd';
+import { ReduxProvider } from '@/redux';
+import { App as AntdApp, ConfigProvider } from 'antd';
 import { Fragment, PropsWithChildren, useEffect } from 'react';
 import './globals.css';
 import RootLayout from './RootLayout';
+
+import { setMessageInstance } from '@/utils/helpers';
+
+const AntdMessageExtractor = () => {
+  const { message } = AntdApp.useApp();
+  useEffect(() => {
+    setMessageInstance(message);
+  }, [message]);
+  return null;
+};
 
 const ChildLayout = ({ children }: PropsWithChildren) => {
   useEffect(() => {
@@ -24,9 +35,22 @@ const ChildLayout = ({ children }: PropsWithChildren) => {
 export default function Layout({ children }: PropsWithChildren) {
   return (
     <RootLayout>
-      <AntdApp>
-        <ChildLayout>{children}</ChildLayout>
-      </AntdApp>
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: '#4f46e5',
+            borderRadius: 8,
+            fontFamily: 'var(--font-poppins), sans-serif',
+          },
+        }}
+      >
+        <AntdApp>
+          <AntdMessageExtractor />
+          <ReduxProvider>
+            <ChildLayout>{children}</ChildLayout>
+          </ReduxProvider>
+        </AntdApp>
+      </ConfigProvider>
     </RootLayout>
   );
 }
