@@ -162,11 +162,11 @@ function BoardActionContent() {
                 <div className="flex items-center gap-2 py-0.5">
                   <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-semibold text-indigo-700">
                     {user.name
-                      .split(" ")
-                      .slice(0, 2)
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()}
+                      ?.split(" ")
+                      ?.slice(0, 2)
+                      ?.map((n) => n[0])
+                      ?.join("")
+                      ?.toUpperCase()}
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-slate-800">{user.name}</p>

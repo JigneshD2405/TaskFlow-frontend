@@ -132,7 +132,15 @@ export default function BoardListPage() {
           <h1 className="text-2xl font-bold text-slate-800">My Boards</h1>
           <p className="text-sm text-slate-500">Manage your collaborative boards</p>
         </div>
-        <Button type="primary" size="large" onClick={() => { setCreateModalOpen(true); fetchUsers(); }} className="bg-indigo-600">
+        <Button
+          type="primary"
+          size="large"
+          onClick={() => {
+            setCreateModalOpen(true);
+            fetchUsers();
+          }}
+          className="bg-indigo-600"
+        >
           + New Board
         </Button>
       </div>
@@ -270,11 +278,11 @@ export default function BoardListPage() {
                   <div className="flex items-center gap-2 py-0.5">
                     <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-semibold text-indigo-700">
                       {user.name
-                        .split(" ")
-                        .slice(0, 2)
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
+                        ?.split(" ")
+                        ?.slice(0, 2)
+                        ?.map((n) => n[0])
+                        ?.join("")
+                        ?.toUpperCase()}
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-slate-800">{user.name}</p>
