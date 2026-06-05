@@ -4,7 +4,7 @@ import { ROUTES } from '@/constants';
 import { showToast } from '@/utils';
 import { Button, Input } from 'antd';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
 const initialValues = { title: '', description: '' };
 
@@ -19,22 +19,22 @@ function BoardActionContent() {
   const [errors, setErrors] = useState<any>(null);
 
 
-  const fetchDetail = async (detailId: string) => {
+  const fetchDetail = useCallback(async (detailId: string) => {
     try {
       setFetching(true);
-      const { data, status } = await apiHandler.boards.get(id);
+      const { data, status } = await apiHandler.boards.get(detailId);
       if ([200, 201].includes(status)) setBoardDetails(data?.data || initialValues);
     } catch (error: any) {
       showToast('error', error?.message);
     } finally {
       setFetching(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     if (id) fetchDetail(id);
     else setBoardDetails(initialValues);
-  }, [id, fetchDetail, initialValues]);
+  }, [id, fetchDetail]);
 
   const handleChange = (key: keyof Record<string, any>, value: any) => {
     setBoardDetails((prev) => ({ ...prev, [key]: value }));
