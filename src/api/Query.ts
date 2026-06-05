@@ -11,6 +11,8 @@ const Query = {
   columns: "/columns",
 
   cards: "/cards",
+
+  users: "/users",
 };
 
 export default Query;

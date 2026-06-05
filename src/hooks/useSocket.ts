@@ -1,9 +1,13 @@
 'use client';
-import { actions, selectors, store } from '@/redux';
+import { actions, selectors } from '@/redux';
 import { Card, Column } from '@/types';
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { io, Socket } from 'socket.io-client';
+
+// Module-level socket ID read by the axios interceptor to set X-Socket-Id header.
+// Using a plain object so the reference is stable and importable without React.
+export const socketMeta: { id: string | null } = { id: null };
 
 export const useSocket = (boardId: string | null) => {
   const dispatch = useDispatch();
@@ -23,7 +27,15 @@ export const useSocket = (boardId: string | null) => {
     socketRef.current = socket;
 
     socket.on('connect', () => {
+      socketMeta.id = socket.id ?? null;
       socket.emit('join-board', boardId);
+    });
+
+    // On reconnect the board state may be stale — trigger a re-fetch via a
+    // custom event that the kanban page listens to.
+    socket.on('reconnect', () => {
+      socket.emit('join-board', boardId);
+      window.dispatchEvent(new CustomEvent('socket:reconnected'));
     });
 
     socket.on('column:created', ({ column }: { column: Column }) => {
@@ -55,7 +67,7 @@ export const useSocket = (boardId: string | null) => {
     });
 
     socket.on('disconnect', () => {
-      console.log('Socket disconnected');
+      socketMeta.id = null;
     });
 
     socket.on('connect_error', (err) => {
@@ -65,6 +77,8 @@ export const useSocket = (boardId: string | null) => {
     return () => {
       socket.emit('leave-board', boardId);
       socket.disconnect();
+      socketRef.current = null;
+      socketMeta.id = null;
     };
   }, [boardId, user?.accessToken, dispatch]);
 

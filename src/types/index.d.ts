@@ -9,7 +9,7 @@ export interface Board {
   title: string;
   description?: string;
   ownerId: string;
-  members: string[];
+  members: User[];
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +30,7 @@ export interface Card {
   columnId: string;
   boardId: string;
   assigneeId?: string | null;
+  assigneeName?: string | null;
   dueDate?: string | null;
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   order: number;

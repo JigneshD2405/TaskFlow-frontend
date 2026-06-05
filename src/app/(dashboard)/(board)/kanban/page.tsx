@@ -86,6 +86,18 @@ const CardItem = memo(
               })}
             </span>
           )}
+          {card.assigneeName && (
+            <Tooltip title={card.assigneeName}>
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700">
+                {card.assigneeName
+                  .split(" ")
+                  .slice(0, 2)
+                  .map((n: string) => n[0])
+                  .join("")
+                  .toUpperCase()}
+              </span>
+            </Tooltip>
+          )}
         </div>
       </div>
     );
@@ -201,12 +213,17 @@ function KanbanContent() {
       const { data, status } = await apiHandler.boards.get(boardId);
 
       if ([200, 201].includes(status)) {
+        const members: { _id: string; name: string }[] = data?.data.members || [];
+        const memberMap = Object.fromEntries(members.map((m) => [m._id.toString(), m.name]));
         dispatch(
           actions.setActiveBoard({
             ...data?.data,
             columns: (data?.data.columns || []).map((c: any) => ({
               ...c,
-              cards: c.cards || [],
+              cards: (c.cards || []).map((card: any) => ({
+                ...card,
+                assigneeName: card.assigneeId ? (memberMap[card.assigneeId.toString()] ?? null) : null,
+              })),
             })),
           }),
         );
@@ -227,6 +244,12 @@ function KanbanContent() {
     }
     fetchBoard();
   }, [boardId, fetchBoard, router]);
+
+  useEffect(() => {
+    const onReconnect = () => fetchBoard();
+    window.addEventListener('socket:reconnected', onReconnect);
+    return () => window.removeEventListener('socket:reconnected', onReconnect);
+  }, [fetchBoard]);
 
   const sortedColumns = useMemo(() => {
     if (activeBoard?.columns.length === 0) return [];
@@ -344,6 +367,7 @@ function KanbanContent() {
       description: card.description,
       priority: card.priority,
       dueDate: card.dueDate ? dayjs(card.dueDate) : null,
+      assigneeId: card.assigneeId ?? null,
     });
     setCardModalOpen(true);
   };
@@ -354,12 +378,17 @@ function KanbanContent() {
       const payload = { ...values, dueDate: values.dueDate ? values.dueDate.toISOString() : null };
       setCardLoading(true);
 
+      const assigneeName =
+        payload.assigneeId
+          ? (activeBoard?.members.find((m) => m._id === payload.assigneeId)?.name ?? null)
+          : null;
+
       if (editingCard) {
         const { data } = await apiHandler.cards.update(editingCard._id, payload);
-        dispatch(actions.updateCard(data.data));
+        dispatch(actions.updateCard({ ...data.data, assigneeName }));
       } else {
         const { data } = await apiHandler.cards.create(activeColumnId!, payload);
-        dispatch(actions.addCard(data.data));
+        dispatch(actions.addCard({ ...data.data, assigneeName }));
       }
       setCardModalOpen(false);
     } catch (err: any) {
@@ -492,6 +521,26 @@ function KanbanContent() {
 
           <Form.Item name="description" label="Description">
             <Input.TextArea placeholder="Add more details…" rows={3} maxLength={5000} />
+          </Form.Item>
+
+          <Form.Item name="assigneeId" label="Assignee">
+            <Select placeholder="Assign to a member" allowClear>
+              {(activeBoard?.members ?? []).map((member) => (
+                <Select.Option key={member._id} value={member._id}>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700">
+                      {member.name
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </span>
+                    {member.name}
+                  </div>
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">

@@ -1,3 +1,4 @@
+import { socketMeta } from "@/hooks/useSocket";
 import { ROUTES } from "@/constants/routes";
 import { actions, store } from "@/redux";
 import axios, { AxiosResponse } from "axios";
@@ -12,6 +13,9 @@ apiClient.interceptors.request.use(
     const token = state?.auth?.user?.accessToken;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (socketMeta.id) {
+      config.headers["X-Socket-Id"] = socketMeta.id;
     }
     return config;
   },

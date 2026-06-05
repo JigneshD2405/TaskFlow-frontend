@@ -35,4 +35,8 @@ export const apiHandler = {
     move: (id: string, payload: any, options?: AxiosRequestConfig) =>
       apiClient.post(`${Query.cards}/${id}/move`, payload, options),
   },
+  users: {
+    search: (q: string, options?: AxiosRequestConfig) =>
+      apiClient.get(`${Query.users}/search?q=${encodeURIComponent(q)}`, options),
+  },
 };

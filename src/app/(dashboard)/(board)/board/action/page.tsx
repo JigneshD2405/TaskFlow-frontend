@@ -2,27 +2,45 @@
 import { apiHandler } from "@/api/apiHandler";
 import { ROUTES } from "@/constants";
 import { showToast } from "@/utils";
-import { Button, Input } from "antd";
+import { Button, Input, Select, Spin } from "antd";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
-const initialValues = { title: "", description: "" };
+interface MemberOption {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+const initialValues = { title: "", description: "", members: [] as string[] };
 
 function BoardActionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const isEdit = !!id;
-  const [boardDetails, setBoardDetails] = useState<Record<string, any>>(initialValues);
+
+  const [boardDetails, setBoardDetails] = useState(initialValues);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [errors, setErrors] = useState<any>(null);
+
+  const [memberOptions, setMemberOptions] = useState<MemberOption[]>([]);
+  const [memberSearching, setMemberSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchDetail = useCallback(async (detailId: string) => {
     try {
       setFetching(true);
       const { data, status } = await apiHandler.boards.get(detailId);
-      if ([200, 201].includes(status)) setBoardDetails(data?.data || initialValues);
+      if ([200, 201].includes(status)) {
+        const board = data?.data || initialValues;
+        const memberIds = (board.members || []).map((m: MemberOption) => m._id);
+        setBoardDetails({
+          title: board.title || "",
+          description: board.description || "",
+          members: memberIds,
+        });
+      }
     } catch (error: any) {
       showToast("error", error?.message);
     } finally {
@@ -30,7 +48,27 @@ function BoardActionContent() {
     }
   }, []);
 
+  const fetchUsers = async (query: string = "") => {
+    setMemberSearching(true);
+    try {
+      const { data, status } = await apiHandler.users.search(query);
+      if ([200, 201].includes(status)) {
+        setMemberOptions(data?.data || []);
+      }
+    } catch {
+      // silent
+    } finally {
+      setMemberSearching(false);
+    }
+  };
+
+  const handleMemberSearch = (query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchUsers(query), 350);
+  };
+
   useEffect(() => {
+    fetchUsers();
     if (id) {
       fetchDetail(id);
     } else {
@@ -38,13 +76,13 @@ function BoardActionContent() {
     }
   }, [fetchDetail, id]);
 
-  const handleChange = (key: keyof Record<string, any>, value: any) => {
-    setBoardDetails((prev) => ({ ...prev, [key]: value }));
-  };
-
   const handleSubmit = async () => {
+    if (!boardDetails.title.trim()) {
+      showToast("error", "Board title is required");
+      return;
+    }
+    setLoading(true);
     try {
-      setLoading(true);
       const { data, status } = id
         ? await apiHandler.boards.update(id, boardDetails)
         : await apiHandler.boards.create(boardDetails);
@@ -72,14 +110,14 @@ function BoardActionContent() {
         <h1 className="text-2xl font-bold text-slate-800">{isEdit ? "Edit Board" : "Create Board"}</h1>
       </div>
 
-      <div className="rounded-xl bg-white p-6 shadow-sm border border-slate-200 space-y-4">
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
             Board Title <span className="text-red-500">*</span>
           </label>
           <Input
             value={boardDetails.title}
-            onChange={(e) => handleChange("title", e.target.value)}
+            onChange={(e) => setBoardDetails((p) => ({ ...p, title: e.target.value }))}
             placeholder="e.g. Product Roadmap"
             size="large"
             maxLength={200}
@@ -90,11 +128,55 @@ function BoardActionContent() {
           <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
           <Input.TextArea
             value={boardDetails.description}
-            onChange={(e) => handleChange("description", e.target.value)}
+            onChange={(e) => setBoardDetails((p) => ({ ...p, description: e.target.value }))}
             placeholder="Optional description..."
             rows={4}
             maxLength={1000}
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Members</label>
+          <Select
+            mode="multiple"
+            className="w-full"
+            size="large"
+            placeholder="Search by name or email..."
+            value={boardDetails.members}
+            onChange={(ids: string[]) => setBoardDetails((p) => ({ ...p, members: ids }))}
+            onSearch={handleMemberSearch}
+            filterOption={false}
+            notFoundContent={
+              memberSearching ? (
+                <div className="flex items-center justify-center py-2">
+                  <Spin size="small" />
+                </div>
+              ) : (
+                <span className="text-xs text-slate-400">Type to search users…</span>
+              )
+            }
+            optionLabelProp="label"
+          >
+            {memberOptions.map((user) => (
+              <Select.Option key={user._id} value={user._id} label={user.name}>
+                <div className="flex items-center gap-2 py-0.5">
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-semibold text-indigo-700">
+                    {user.name
+                      .split(" ")
+                      .slice(0, 2)
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-800">{user.name}</p>
+                    <p className="truncate text-xs text-slate-400">{user.email}</p>
+                  </div>
+                </div>
+              </Select.Option>
+            ))}
+          </Select>
+          <p className="mt-1 text-xs text-slate-400">Search and select members to add to this board.</p>
         </div>
 
         <div className="flex gap-3 pt-2">
